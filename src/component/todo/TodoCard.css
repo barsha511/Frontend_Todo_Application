@@ -1,0 +1,40 @@
+/* TodoCard.css */
+
+.todo-card {
+    background-color: #f0f0f0;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative; /* Make the container position relative for absolute positioning of icons */
+  }
+  
+  .todo-card .todo-content h4 {
+    margin-bottom: 5px;
+    font-size: 18px;
+    color: #333;
+  }
+  
+  .todo-card .todo-content p {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .todo-card .todo-icons {
+    position: absolute; /* Position the icons absolutely within the card */
+    top: 10px;
+    right: 10px;
+    display: flex;
+  }
+  
+  .todo-card .todo-icons .icon {
+    cursor: pointer;
+    font-size: 20px;
+    margin-left: 10px;
+    color: #888;
+  }
+  
+  .todo-card .todo-icons .icon:hover {
+    color: #555;
+  }
+  

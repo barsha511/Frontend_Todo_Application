@@ -1,0 +1,19 @@
+/* Footer.css */
+
+.footer-container {
+    background-color: #f8f9fa; /* Light grey background color */
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+  }
+  
