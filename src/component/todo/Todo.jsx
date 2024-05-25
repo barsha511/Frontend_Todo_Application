@@ -9,6 +9,8 @@ const Todo = () => {
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
     const [editIndex, setEditIndex] = useState(null);
+    const [updatedTitle, setUpdatedTitle] = useState('');
+    const [updatedBody, setUpdatedBody] = useState('');
 
     const handleTitleChange = (e) => {
         setTitle(e.target.value);
@@ -18,15 +20,36 @@ const Todo = () => {
         setBody(e.target.value);
     };
 
+    const handleUpdatedTitleChange = (e) => {
+        setUpdatedTitle(e.target.value);
+    };
+
+    const handleUpdatedBodyChange = (e) => {
+        setUpdatedBody(e.target.value);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (editIndex !== null) {
-            const updatedTodos = todos.map((todo, index) =>
-                index === editIndex ? { ...todo, title, body } : todo
-            );
-            setTodos(updatedTodos);
-            setEditIndex(null);
+            try {
+                const response = await axios.put(`http://localhost:1000/api/v2/UpdateTodo/${editIndex}`, {
+                    title: updatedTitle,
+                    body: updatedBody,
+                });
+                console.log('Update Todo response:', response.data);
+
+                // Update the todos list with the updated todo
+                const updatedTodos = todos.map((todo) =>
+                    todo._id === editIndex ? response.data.updatedList : todo
+                );
+                setTodos(updatedTodos);
+                setEditIndex(null);
+                setUpdatedTitle('');
+                setUpdatedBody('');
+            } catch (error) {
+                console.error('Error updating todo:', error);
+            }
         } else {
             try {
                 const response = await axios.post('http://localhost:1000/api/v2/AddTodo', {
@@ -37,12 +60,12 @@ const Todo = () => {
                 console.log('Add Todo response:', response.data);
                 const newTodo = { ...response.data, title, body };
                 setTodos([...todos, newTodo]);
+                setTitle('');
+                setBody('');
             } catch (error) {
                 console.error('Error adding todo:', error);
             }
         }
-        setTitle('');
-        setBody('');
     };
 
     const handleDelete = async (Carid) => {
@@ -51,30 +74,25 @@ const Todo = () => {
                 data: { id: id }
             });
             console.log('Delete Todo response:', response.data);
-
-            // Ensure the correct filtering logic
-            
-            console.log(Carid)
             const updatedTodos = todos.filter((todo) => todo._id !== Carid);
             setTodos(updatedTodos);
-            
-            console.log('Updated Todos after deletion:', updatedTodos);
-            
         } catch (error) {
             console.error('Error deleting todo:', error);
         }
     };
 
-    const handleEditClick = (index) => {
-        const todoToEdit = todos[index];
-        setTitle(todoToEdit.title);
-        setBody(todoToEdit.body);
-        setEditIndex(index);
+    const handleEditClick = (todoId) => {
+        const todoToEdit = todos.find(todo => todo._id === todoId);
+        setUpdatedTitle(todoToEdit.title);
+        setUpdatedBody(todoToEdit.body);
+        setEditIndex(todoId);
     };
 
     const handleCancelClick = () => {
         setTitle('');
         setBody('');
+        setUpdatedTitle('');
+        setUpdatedBody('');
         setEditIndex(null);
     };
 
@@ -101,8 +119,8 @@ const Todo = () => {
                         type="text"
                         id="title"
                         name="title"
-                        value={title}
-                        onChange={handleTitleChange}
+                        value={editIndex !== null ? updatedTitle : title}
+                        onChange={editIndex !== null ? handleUpdatedTitleChange : handleTitleChange}
                         required
                     />
                 </div>
@@ -111,8 +129,8 @@ const Todo = () => {
                     <textarea
                         id="body"
                         name="body"
-                        value={body}
-                        onChange={handleBodyChange}
+                        value={editIndex !== null ? updatedBody : body}
+                        onChange={editIndex !== null ? handleUpdatedBodyChange : handleBodyChange}
                         required
                     ></textarea>
                 </div>
@@ -122,12 +140,12 @@ const Todo = () => {
 
             <div className="todo-list">
                 <h3>Todo List</h3>
-                {todos && todos.map((todo, index) => (
+                {todos && todos.map((todo) => (
                     <TodoCard 
                         key={todo._id} 
                         todo={todo}
                         onDelete={() => handleDelete(todo._id)}
-                        onEdit={() => handleEditClick(index)} 
+                        onEdit={() => handleEditClick(todo._id)} 
                     />
                 ))}
             </div>
