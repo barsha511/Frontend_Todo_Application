@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import './SignUp.css'; // Ensure the path is correct
+import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
 const SignUp = () => {
+    const navigate = useNavigate();
     const [inputs, setInputs] = useState({
         email: "",
         username: "",
         password: ""
     });
-
+    
     const handleChange = (e) => {
         const { name, value } = e.target;
         setInputs({ ...inputs, [name]: value });
@@ -18,14 +20,16 @@ const SignUp = () => {
         try {
             const response = await axios.post('http://localhost:1000/api/v1/register', inputs);
            
-            if (response.data.message === 'Successfully Registered') {
-                alert(response.data.message);
+            if (response.data.message === 'Successfully Register') {
+                //  alert(response.data.message);
                 setInputs({
                     email: '',
                     username: '',
                     password: ''
                 });
+                navigate('/login');
                 console.log(inputs.email);
+                
             }
             else {
                 alert(response.data.message);

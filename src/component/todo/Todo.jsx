@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Todo.css'; // Import CSS file for styling
 import TodoCard from './TodoCard';
-import TodoUpdate from './TodoUpdate';
-import { BrowserRouter as Router, Link } from 'react-router-dom';
+import axios from 'axios';
 
 const Todo = () => {
+    let id = sessionStorage.getItem('id');
     const [todos, setTodos] = useState([]);
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
@@ -18,8 +18,9 @@ const Todo = () => {
         setBody(e.target.value);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (editIndex !== null) {
             const updatedTodos = todos.map((todo, index) =>
                 index === editIndex ? { ...todo, title, body } : todo
@@ -27,16 +28,41 @@ const Todo = () => {
             setTodos(updatedTodos);
             setEditIndex(null);
         } else {
-            const newTodo = { title, body };
-            setTodos([...todos, newTodo]);
+            try {
+                const response = await axios.post('http://localhost:1000/api/v2/AddTodo', {
+                    title: title,
+                    body: body,
+                    id: id
+                });
+                console.log('Add Todo response:', response.data);
+                const newTodo = { ...response.data, title, body };
+                setTodos([...todos, newTodo]);
+            } catch (error) {
+                console.error('Error adding todo:', error);
+            }
         }
         setTitle('');
         setBody('');
     };
 
-    const handleDelete = (index) => {
-        const updatedTodos = todos.filter((todo, todoIndex) => todoIndex !== index);
-        setTodos(updatedTodos);
+    const handleDelete = async (Carid) => {
+        try {
+            const response = await axios.delete(`http://localhost:1000/api/v2/DeleteTodo/${Carid}`, {
+                data: { id: id }
+            });
+            console.log('Delete Todo response:', response.data);
+
+            // Ensure the correct filtering logic
+            
+            console.log(Carid)
+            const updatedTodos = todos.filter((todo) => todo._id !== Carid);
+            setTodos(updatedTodos);
+            
+            console.log('Updated Todos after deletion:', updatedTodos);
+            
+        } catch (error) {
+            console.error('Error deleting todo:', error);
+        }
     };
 
     const handleEditClick = (index) => {
@@ -51,6 +77,19 @@ const Todo = () => {
         setBody('');
         setEditIndex(null);
     };
+
+    useEffect(() => {
+        const fetchTodos = async () => {
+            try {
+                const response = await axios.get(`http://localhost:1000/api/v2/ReadList/${id}`);
+                console.log('Fetch Todos response:', response.data);
+                setTodos(response.data.list);
+            } catch (error) {
+                console.error('Error fetching todos:', error);
+            }
+        };
+        fetchTodos();
+    }, [id]);
 
     return (
         <div className="todo-container">
@@ -85,17 +124,15 @@ const Todo = () => {
                 <h3>Todo List</h3>
                 {todos && todos.map((todo, index) => (
                     <TodoCard 
-                        key={index} 
-                        setTodos={setTodos} 
-                        todos={todos} 
+                        key={todo._id} 
                         todo={todo}
-                        onDelete={() => handleDelete(index)}
+                        onDelete={() => handleDelete(todo._id)}
                         onEdit={() => handleEditClick(index)} 
                     />
                 ))}
             </div>
         </div>
     );
-}
+};
 
 export default Todo;
